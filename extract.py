@@ -2,24 +2,14 @@ import os
 import requests
 import pandas as pd
 from dotenv import load_dotenv
+from config import BASE_URL, headers
 
-#set the request
-load_dotenv()
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-REPO = "Scytale-exercise/scytale-repo3"
-BASE_URL = f"https://api.github.com/repos/{REPO}/pulls"
-
-headers = {
-    "Authorization": f"Bearer {GITHUB_TOKEN}",
-    "Accept": "application/vnd.github+json"
-}
-
+#send the request
 params = {
     "state": "closed",
     "per_page": 100
 }
 
-#send the request
 response = requests.get(BASE_URL, headers=headers, params=params)
 
 #check if the request was successful
