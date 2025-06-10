@@ -2,8 +2,7 @@ import pandas as pd
 from dotenv import load_dotenv
 import os
 import requests
-from config import BASE_URL, headers
-
+from config import BASE_URL, headers, PULLS_URL
 
 df = pd.read_csv("data/raw_prs.csv")
 
@@ -11,19 +10,20 @@ def check_cr_passed(pr_number):
 
     """return True if the pr passed code review, False otherwise"""
 
-    url = f"{BASE_URL}/pulls/{pr_number}/reviews"
+    url = f"{PULLS_URL}/{pr_number}/reviews"
     resp = requests.get(url, headers=headers)
 
     if resp.status_code == 200:
         reviews = resp.json()
-
+        print(f"PR #{pr_number}: Found {len(reviews)} reviews. States: {[r.get('state') for r in reviews]}")
         for review in reviews:
 
             if review.get("state") == "APPROVED":
                 return True
+        return False # Return False if no approved reviews are found
             
     else:
-        print(f"Failed to fetch reviews for PR #{pr_number}")
+        print(f"Failed to fetch reviews for PR #{pr_number}: {resp.status_code} {resp.text}")
         return False
     
 
@@ -31,7 +31,7 @@ def check_checks_passed(pr_number):
 
     """return True if all the required checks are passed, False otherwise"""
 
-    pr_url = f"{BASE_URL}/pulls/{pr_number}"
+    pr_url = f"{PULLS_URL}/{pr_number}"
     pr_resp = requests.get(pr_url, headers=headers)
 
     if pr_resp.status_code != 200:
@@ -63,6 +63,6 @@ for index, row in df.iterrows():
     
 #save the enriched prs to a csv file
 df.to_csv("data/enriched_prs.csv", index=False)
-print("Saved enriched PRs to data/enriched_prs.csv ✅")
+print("Saved enriched PRs to data/enriched_prs.csv")
 
 
